@@ -72,6 +72,7 @@ const UserManagement = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined);
   const [isCreating, setIsCreating] = useState(false);
+  const [isViewing, setIsViewing] = useState(false); // New state for view mode
   
   // Delete dialog state
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -138,6 +139,7 @@ const UserManagement = () => {
   const openCreateUserForm = () => {
     setSelectedUser(undefined);
     setIsCreating(true);
+    setIsViewing(false);
     setIsUserFormOpen(true);
   };
   
@@ -145,6 +147,15 @@ const UserManagement = () => {
   const openEditUserForm = (user: User) => {
     setSelectedUser(user);
     setIsCreating(false);
+    setIsViewing(false);
+    setIsUserFormOpen(true);
+  };
+  
+  // Open user form for viewing
+  const openViewUserForm = (user: User) => {
+    setSelectedUser(user);
+    setIsCreating(false);
+    setIsViewing(true);
     setIsUserFormOpen(true);
   };
   
@@ -153,6 +164,7 @@ const UserManagement = () => {
     setIsUserFormOpen(false);
     setSelectedUser(undefined);
     setIsCreating(false);
+    setIsViewing(false);
   };
   
   // Open delete confirmation
@@ -235,13 +247,14 @@ const UserManagement = () => {
     (user) =>
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.phone.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.role.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className="flex-1 space-y-4 p-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <h2 className="text-3xl font-bold tracking-tight">User Management</h2>
+        <h2 className="text-3xl font-bold tracking-tight">Staff Management</h2>
         
         <div className="flex w-full sm:w-auto gap-2">
           <div className="relative w-full sm:w-auto">
@@ -292,9 +305,9 @@ const UserManagement = () => {
                   <TableHead>ID</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Phone Number</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Last Login</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -303,42 +316,60 @@ const UserManagement = () => {
                   filteredUsers.map((user) => (
                     <TableRow key={user.id}>
                       <TableCell className="w-[80px]">{user.id.split('-')[1]}</TableCell>
-                      <TableCell className="font-medium">{user.name}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          <div className="relative h-8 w-8">
+                            <img
+                              src={user.avatar || "/placeholder.svg"}
+                              alt={user.name}
+                              className="h-full w-full rounded-full object-cover"
+                            />
+                          </div>
+                          <span>{user.name}</span>
+                        </div>
+                      </TableCell>
                       <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.phone}</TableCell>
                       <TableCell>{getRoleBadge(user.role)}</TableCell>
                       <TableCell>{getStatusBadge(user.status)}</TableCell>
-                      <TableCell>{user.lastLogin}</TableCell>
                       <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => openEditUserForm(user)}>
-                              Edit User
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            {user.status === "Active" ? (
-                              <DropdownMenuItem onClick={() => handleStatusChange(user, "Inactive")}>
-                                Deactivate
-                              </DropdownMenuItem>
-                            ) : (
-                              <DropdownMenuItem onClick={() => handleStatusChange(user, "Active")}>
-                                Activate
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem 
-                              className="text-red-500"
-                              onClick={() => openDeleteDialog(user)}
-                            >
-                              Delete User
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openViewUserForm(user)} // Updated to open view mode
+                            className="h-8 w-8"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                              <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditUserForm(user)} // Kept for edit mode
+                            className="h-8 w-8"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openDeleteDialog(user)}
+                            className="h-8 w-8 text-red-500 hover:text-red-600"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="3 6 5 6 21 6"></polyline>
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                              <line x1="10" y1="11" x2="10" y2="17"></line>
+                              <line x1="14" y1="11" x2="14" y2="17"></line>
+                            </svg>
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -365,8 +396,15 @@ const UserManagement = () => {
         isSubmitting={isSubmitting}
         onClose={closeUserForm}
         onSubmit={handleSubmitUser}
-        title={isCreating ? "Create User" : "Edit User"}
-        description={isCreating ? "Add a new user to the system" : "Modify user details"}
+        isViewMode={isViewing} // Pass view mode state
+        title={isCreating ? "Create User" : isViewing ? "View User" : "Edit User"}
+        description={
+          isCreating
+            ? "Add a new user to the system"
+            : isViewing
+            ? "View user details"
+            : "Modify user details"
+        }
       />
 
       {/* Delete Confirmation Dialog */}

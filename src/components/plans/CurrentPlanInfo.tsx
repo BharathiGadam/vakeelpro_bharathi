@@ -39,7 +39,7 @@ const mockCurrentPlan: PlanData = {
   expiryDate: "2025-06-15",
   features: [
     { name: "Unlimited cases", included: true },
-    { name: "User management", included: true },
+    { name: "Staff management", included: true },
     { name: "Role management", included: true },
     { name: "10 users included", included: true },
     { name: "Email notifications", included: true },

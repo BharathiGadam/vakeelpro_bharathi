@@ -83,8 +83,8 @@ const LawFirmForm = ({ mode }: LawFirmFormProps) => {
               
               {currentStep === 1 && (
                 <ContactDetailsStep
-                  isViewMode={isViewMode}
-                  selectedLawFirm={selectedLawFirm}
+                  isViewMode={isViewMode}                 
+                  // Remove selectedLawFirm prop since it's not defined in ContactDetailsStepProps
                   handleFileChange={handleFileChange}
                   logoFile={logoFile}
                 />

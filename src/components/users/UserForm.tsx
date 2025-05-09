@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState , useEffect, useRef } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -24,6 +24,7 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
+import { Upload } from "lucide-react";
 
 const userFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -31,7 +32,7 @@ const userFormSchema = z.object({
   role: z.string().min(1, "Role is required"),
   status: z.enum(["Active", "Inactive", "Suspended"]),
   phone: z.string().optional(),
-  department: z.string().optional(),
+  avatar: z.string().optional(),
 });
 
 type UserFormData = z.infer<typeof userFormSchema>;
@@ -42,6 +43,7 @@ interface UserFormProps {
   isSubmitting: boolean;
   onClose: () => void;
   onSubmit: (data: UserFormData) => void;
+  isViewMode?: boolean; // Add this line
   title: string;
   description?: string;
 }
@@ -52,66 +54,143 @@ const UserForm = ({
   isSubmitting,
   onClose,
   onSubmit,
+  isViewMode,
   title,
   description,
 }: UserFormProps) => {
   const form = useForm<UserFormData>({
     resolver: zodResolver(userFormSchema),
-    defaultValues: user
-      ? {
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          status: user.status,
-          phone: user.phone || "",
-          department: user.department || "",
-        }
-      : {
-          name: "",
-          email: "",
-          role: "USER",
-          status: "Active",
-          phone: "",
-          department: "",
-        },
+    defaultValues: {
+      name: "",
+      email: "",
+      role: "USER",
+      status: "Active",
+      phone: "",
+      avatar: ""
+    },
   });
 
-  const handleSubmit = (data: UserFormData) => {
-    onSubmit(data);
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+        phone: user.phone || "",
+        avatar: user.avatar || ""
+      });
+    }
+  }, [user, form]);
+
+  // Add state for file input
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const imageUrl = reader.result as string;
+        form.setValue("avatar", imageUrl);
+        setSelectedFile(file);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
-
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* Profile image section */}
+            <div className="flex items-center gap-4 mb-4">
+              <div className="relative h-24 w-24 rounded-full overflow-hidden bg-gray-100">
+                <img
+                  src={form.watch("avatar") || "/placeholder.svg"}
+                  alt={form.watch("name") || "Profile"}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              {!isViewMode && (
+                <div className="flex flex-col gap-2">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="h-4 w-4" />
+                    Upload Photo
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    Recommended: Square image, at least 200x200px
+                  </p>
+                </div>
+              )}
+            </div>
+
             <CustomFormField
               form={form}
               name="name"
               label="Name"
             >
-              <Input placeholder="Enter name" />
+              <Input 
+                {...form.register("name")} 
+                value={form.watch("name")}
+                onChange={(e) => form.setValue("name", e.target.value)}
+                disabled={isViewMode || isSubmitting} 
+              />
             </CustomFormField>
-
             <CustomFormField
               form={form}
               name="email"
               label="Email"
             >
-              <Input placeholder="Enter email" type="email" />
+              <Input 
+                {...form.register("email")} 
+                value={form.watch("email")}
+                onChange={(e) => form.setValue("email", e.target.value)}
+                disabled={isViewMode || isSubmitting} 
+              />
             </CustomFormField>
-
+            
+            <CustomFormField
+              form={form}
+              name="phone"
+              label="Phone"
+            >
+              <Input 
+                {...form.register("phone")} 
+                value={form.watch("phone")}
+                onChange={(e) => form.setValue("phone", e.target.value)}
+                disabled={isViewMode || isSubmitting} 
+              />
+            </CustomFormField>         
             <CustomFormField
               form={form}
               name="role"
               label="Role"
             >
-              <Select>
+              <Select 
+                onValueChange={(value) => form.setValue("role", value)} 
+                value={form.watch("role")} 
+                disabled={isViewMode || isSubmitting}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
@@ -128,51 +207,27 @@ const UserForm = ({
               name="status"
               label="Status"
             >
-              <Select>
+              <Select 
+                onValueChange={(value: "Active" | "Inactive") => form.setValue("status", value)}
+                value={form.watch("status")} 
+                disabled={isViewMode || isSubmitting}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Active">Active</SelectItem>
                   <SelectItem value="Inactive">Inactive</SelectItem>
-                  <SelectItem value="Suspended">Suspended</SelectItem>
                 </SelectContent>
               </Select>
             </CustomFormField>
-
-            <CustomFormField
-              form={form}
-              name="phone"
-              label="Phone"
-              description="Optional"
-            >
-              <Input placeholder="Enter phone number" />
-            </CustomFormField>
-
-            <CustomFormField
-              form={form}
-              name="department"
-              label="Department"
-              description="Optional"
-            >
-              <Input placeholder="Enter department" />
-            </CustomFormField>
-
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
-                Cancel
+            
+            {!isViewMode && (
+              <Button type="submit" disabled={isSubmitting} className="w-full">
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSubmitting ? "Saving..." : "Save Changes"}
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  "Save"
-                )}
-              </Button>
-            </div>
+            )}
           </form>
         </Form>
       </DialogContent>

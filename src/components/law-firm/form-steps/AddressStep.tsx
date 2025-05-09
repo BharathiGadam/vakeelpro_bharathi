@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import {
   FormControl,
@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { LawFirmFormData } from "@/types/lawFirm";
+import { countriesMockData, statesMockData, citiesMockData } from "@/services/master-data/mockData";
 
 interface AddressStepProps {
   isViewMode: boolean;
@@ -27,17 +28,16 @@ interface AddressStepProps {
 }
 
 const AddressStep = ({ 
-  isViewMode, 
-  countries = [], 
-  states = [], 
-  cities = [] 
+  isViewMode,
+  countries,
+  states,
+  cities 
 }: AddressStepProps) => {
-  const { control } = useFormContext<LawFirmFormData>();
+  const { control, watch } = useFormContext<LawFirmFormData>();
   
-  // Ensure arrays are properly initialized
-  const countryOptions = Array.isArray(countries) ? countries : [];
-  const stateOptions = Array.isArray(states) ? states : [];
-  const cityOptions = Array.isArray(cities) ? cities : [];
+  // Remove the mock data imports and state management since we're using props
+  const selectedCountry = watch("country");
+  const selectedState = watch("state");
 
   return (
     <div className="space-y-6">
@@ -59,7 +59,7 @@ const AddressStep = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {countryOptions.map((country) => (
+                  {countries.map((country) => (
                     <SelectItem key={country.id} value={country.id}>
                       {country.name}
                     </SelectItem>
@@ -78,7 +78,7 @@ const AddressStep = ({
             <FormItem>
               <FormLabel>State/Province*</FormLabel>
               <Select
-                disabled={isViewMode}
+                disabled={isViewMode || !selectedCountry}
                 onValueChange={field.onChange}
                 defaultValue={field.value}
               >
@@ -88,7 +88,7 @@ const AddressStep = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {stateOptions.map((state) => (
+                  {states.map((state) => (
                     <SelectItem key={state.id} value={state.id}>
                       {state.name}
                     </SelectItem>
@@ -107,7 +107,7 @@ const AddressStep = ({
             <FormItem>
               <FormLabel>City*</FormLabel>
               <Select
-                disabled={isViewMode}
+                disabled={isViewMode || !selectedState}      
                 onValueChange={field.onChange}
                 defaultValue={field.value}
               >
@@ -117,7 +117,7 @@ const AddressStep = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {cityOptions.map((city) => (
+                  {cities.map((city) => (
                     <SelectItem key={city.id} value={city.id}>
                       {city.name}
                     </SelectItem>

@@ -76,7 +76,7 @@ export const navItems: NavItem[] = [
       },
       {
         href: "/users-management",
-        label: "User Management",
+        label: "Staff Management",
         icon: UserCog, 
         module: Modules.UserManagement,
       }

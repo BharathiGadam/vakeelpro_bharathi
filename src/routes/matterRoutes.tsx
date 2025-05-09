@@ -11,6 +11,10 @@ import CaseJourneyDetailPage from "@/pages/matters/journey/CaseJourneyDetailPage
 import CaseView from "@/pages/matters/CaseView";
 import CaseForm from "@/pages/matters/CaseForm";
 import DocumentGeneration from "@/pages/matters/DocumentGeneration";
+import DocumentForm from "@/components/documentGeneration/DocumentForm";
+import DocumentList from "@/components/documentGeneration/DocumentList";
+import DocumentView from "@/components/documentGeneration/DocumentView";
+import DocumentTimeline from "@/components/documentGeneration/DocumentTimeline";
 
 export const matterRoutes: RouteObject[] = [
   // Redirect from matters to case-journey
@@ -90,8 +94,40 @@ export const matterRoutes: RouteObject[] = [
   {
     path: "/document-generation",
     element: (
+      <PrivateRoute requiredModule={Modules.CaseManagement} requiredAction="VIEW">
+        <DocumentList />
+      </PrivateRoute>
+    )
+  },
+  {
+    path: "/document-generation/create",
+    element: (
       <PrivateRoute requiredModule={Modules.CaseManagement} requiredAction="CREATE">
-        <DocumentGeneration />
+        <DocumentForm />
+      </PrivateRoute>
+    )
+  },
+  {
+    path: "/document-generation/edit/:id",
+    element: (
+      <PrivateRoute requiredModule={Modules.CaseManagement} requiredAction="UPDATE">
+        <DocumentForm />
+      </PrivateRoute>
+    )
+  },
+  {
+    path: "/document-generation/:id",
+    element: (
+      <PrivateRoute requiredModule={Modules.CaseManagement} requiredAction="VIEW">
+        <DocumentView />
+      </PrivateRoute>
+    )
+  },
+  {
+    path: "/document-generation/time-line/:id",
+    element: (
+      <PrivateRoute requiredModule={Modules.CaseManagement} requiredAction="VIEW">
+        <DocumentTimeline />
       </PrivateRoute>
     )
   }

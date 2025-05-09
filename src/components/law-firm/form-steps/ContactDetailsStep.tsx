@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { ChangeEvent } from "react";
 import { useFormContext } from "react-hook-form";
 import {
   FormControl,
@@ -10,27 +10,20 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Check } from "lucide-react";
 import { LawFirmFormData } from "@/types/lawFirm";
 
 interface ContactDetailsStepProps {
   isViewMode: boolean;
-  selectedLawFirm?: any;
-  handleFileChange: (fieldName: string, e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleFileChange: (fieldName: string, e: ChangeEvent<HTMLInputElement>) => void;
   logoFile: File | null;
 }
 
 const ContactDetailsStep = ({ 
   isViewMode, 
-  selectedLawFirm,
   handleFileChange,
   logoFile 
 }: ContactDetailsStepProps) => {
   const { control } = useFormContext<LawFirmFormData>();
-
-  const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleFileChange('logoFile', e);
-  };
 
   return (
     <div className="space-y-6">
@@ -108,58 +101,7 @@ const ContactDetailsStep = ({
             </FormItem>
           )}
         />
-        
-        <FormField
-          control={control}
-          name="website"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Firm Website URL</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="https://yourfirmwebsite.com" 
-                  {...field}
-                  disabled={isViewMode}
-                />
-              </FormControl>
-              <FormDescription>Optional</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormItem>
-          <FormLabel>Law Firm Logo</FormLabel>
-          <FormControl>
-            <Input 
-              type="file" 
-              onChange={handleLogoFileChange}
-              disabled={isViewMode}
-              accept=".jpg,.jpeg,.png,.svg"
-            />
-          </FormControl>
-          <FormDescription>Upload your firm logo (max 2MB)</FormDescription>
-        </FormItem>
       </div>
-      
-      {logoFile && (
-        <div className="mt-2 text-sm text-green-600 flex items-center">
-          <Check className="mr-1 h-4 w-4" />
-          Logo selected: {logoFile.name}
-        </div>
-      )}
-      
-      {isViewMode && selectedLawFirm?.logoUrl && (
-        <div className="mt-4 flex justify-start">
-          <div className="w-32 h-32 rounded-md overflow-hidden border">
-            <img 
-              src={selectedLawFirm.logoUrl} 
-              alt="Law firm logo" 
-              className="w-full h-full object-contain"
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 };

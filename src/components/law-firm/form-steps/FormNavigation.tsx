@@ -40,15 +40,7 @@ const FormNavigation = ({
       </Button>
       
       <div className="flex gap-2">
-        {isViewMode && handleEdit && id && (
-          <Button 
-            type="button" 
-            onClick={handleEdit}
-          >
-            Edit Law Firm
-          </Button>
-        )}
-        
+        {/* Remove the Edit Law Firm button */}
         {currentStep < totalSteps - 1 ? (
           <Button 
             type="button" 
